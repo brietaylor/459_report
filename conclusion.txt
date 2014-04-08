@@ -1,10 +1,12 @@
 Conclusions
 ===========
 
-To conclude, we have successfully implemented *oclptx*, an OpenCL-based version of the Global Connectivity Estimation algorithm based on the *probtrackx* algorithm. Our solution is validated for both correctness and speed increase for the deterministic scenario. We also produce results for the probabilistic scenario, and we leave the validation for our sponsor to complete. 
+We checked that our threading scheme is effective and robust across a wide range of systems, including a high-end multi-GPU, multi-CPU workstation, and a low-end, single CPU, single GPU consumer desktop.  Using a placeholder kernel, we measured error-free activity for multi-million particle runs.  This gives us confidence that our architecture is efficient and robust across diverse systems.
 
-For the deterministic scenario, we pass in the same dataset for *probtrackx* and *oclptx*. Upon completion of both algorithms, the difference in the resultant paths are :math:`{ \langle \chi^2 \rangle } \simeq {O(10^{-13})}`. A minute difference between the results is statistically negligible, and indicates the convergence of the algorithms. 
+We verified our interpolation results against the existing *probtrackx* implementation with the random number generators removed.  We've determined that, given the same datasets, the difference between paths in the two implementations is on the order :math:`{ \langle \chi^2 \rangle } \simeq {O(10^{-13})}`, which is on the order of floating point error, and is therefore in good shape.
 
-We then test for computation speed between the two algorithms for the same dataset. For a 4000 particle run, *probtrackx* takes and average of 43s to track, whereas *oclptx* reaches completion at an average of 1000ms (~1s). Thus, we see a speed increase of x43 with the GPU implementation. 
+We profiled both kernels, and determined that *oclptx* is on the order of 5 times faster for a 1000-particle dataset and 10 times faster for a 50,000-particle dataset, against the *probtrackx* implementation, as measured on a single GPU.  Performance improves linearly with number of GPUs, so the sponsor will observe a ~40 times performance improvement.  This is well beyond their expections.
 
-TODO: Steve, Jeff: More specific interpretations of the data here. 1 Paragraph each. This information should be very easily drawn from your results so that we do not sound like we are presenting new information.
+To conclude, we have successfully implemented *oclptx*, an OpenCL implementation of the Global Connectivity Estimation algorithm.
+
+

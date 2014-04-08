@@ -3,10 +3,23 @@ Recommendations
 
 We now present our final recommendations for future developers. As we have completed the bulk of our commitment, the structure of the *oclptx* is robust. Therefore, our recommendations are geared toward porting in additional features, and projects for developers to build upon our module.
 
-During development, 16-bit fixed point encoding was attempted on the bedpostx data to compress it and lower memory requirements. F data was encoded as 1:15, Phi data was encoded as 3:13 and theta data was encoded as 2:14 (bits before decimal : bits after decimal). Subsequent testing revealed a significant divergence from the deterministic ptx2 results, the total mean-square error of the test set went up by a factor of 10^4. As the main goal was to provide a precise, functionally equivalent port for CFRI, this functionality was shelved. However, should users run into severe memory limitations, this may be an acceptable solution.
+Statistical Verification
+------------------------
 
-By double buffering, we can process half the data on the GPU at the same time as the other half is reduced on the CPU.  This feature hasn't been enabled due to time constraints.  It could provide a significant (~30-50%) improvement in performance.
+Our sponsor has been working on methods to statistically verify the global connectivity maps produced by *probtrackx* and similar programs.  They intend to run *oclptx* through these tests.
 
-#. TODO Team
-#. TODO Team
-#. TODO Team
+Fixed Point Parameter Data Representation
+-----------------------------------------
+
+Currently, the system requirements mostly depend on the size of the parameter data buffers.  For current datasets, this data barely fits into GPU memory.  With ever-improving MRI equipment, it makes sense to try and reduce this factor.  The parameter data is currently stored in a 32-bit floating point type, which has 23 bits of precision (plus an 8-bit exponent and 1 sign bit).  It seems reasonable to reduce this to a 16-bit fixed point representation.  This halves the data size at the cost of reducing angular precision to one part in 65,536.  This was attempted briefly, but abandoned because it is not strictly necessary.
+
+Background Reduction
+--------------------
+
+Our reduction system is designed and tested to interpolate half the data on the GPU at the same time as the other half is reduced on the CPU.  This is done by double buffering.  It hasn't been enabled because OpenCL does not include asyncronous (background) calls.  Without that ability, it should still be straightforward to implement by creating a second OpenCL command queue which runs only kernels, while the existing queue is used to read and write buffers.  It will effectively eliminate the runtime contribution of the reduction stage.
+
+Fractional Anisotropy
+---------------------
+
+While tracking, it is common for paths to enter an area of the brain which is highly isotropic.  This condition occurs in areas where there are few fibre pathways (such as fluid regions), or where no macroscopic patterns exist.  Since the validity of directional data in these regions is questionable, it is helpful to detect them and stop tracking.  The *probtrackx* implementation detects these regions and terminates, and it improve our output if *oclptx* did this as well.
+
